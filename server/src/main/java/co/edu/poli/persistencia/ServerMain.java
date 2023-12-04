@@ -15,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0
  * @since 2023.11.06
  */
-public class ServerChat {
+public class ServerMain {
 
-    private static final Logger logger = Logger.getLogger(ServerChat.class);
+    private static final Logger logger = Logger.getLogger(ServerMain.class);
 
     private static final int PORT = 8888;
 
@@ -32,7 +32,7 @@ public class ServerChat {
      * @param port El número de puerto en el que el servidor escucha las conexiones entrantes.
      * @throws IOException Si ocurre un error de entrada/salida al abrir el socket del servidor
      */
-    public ServerChat(int port) throws IOException {
+    public ServerMain(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         logger.info("Server is running...");
     }
@@ -61,7 +61,7 @@ public class ServerChat {
      */
     public static void main(String[] args) {
         try {
-            ServerChat server = new ServerChat(PORT);
+            ServerMain server = new ServerMain(PORT);
             server.serveClients();
         } catch (IOException e) {
             logger.info("Server error: " + e.getMessage());

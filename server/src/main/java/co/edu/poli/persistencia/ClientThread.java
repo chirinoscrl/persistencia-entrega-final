@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -112,9 +115,103 @@ class ClientThread extends Thread {
                 break; // salir del bucle y terminar la conexión
             } else if (clientMessage.startsWith("@")) {
                 if (clientMessage.split(":")[1].trim().equalsIgnoreCase("chao")) {
+
+                    logger.info("Client [" + clientNickname + "]: Conexion finalizada");
                     break;
+                } else {
+                    int firstAt = clientMessage.indexOf('@', 1);
+                    int colon = clientMessage.indexOf(':', firstAt);
+
+                    String clientNickname = clientMessage.substring(0, firstAt);
+                    String operation = clientMessage.substring(firstAt, colon);
+                    String sql = clientMessage.substring(colon + 1);
+                    logger.info("Client [" + clientNickname + "] -> query:" + sql);
+                    try {
+                        SqlResult sqlResult;
+
+                        switch (operation.toLowerCase()) {
+                            case "@select":
+                                sqlResult = executeSelect(sql);
+                                clientOutputWriter.println("Result: " + sqlResult.getResultsList());
+                                break;
+                            case "@insert":
+                                sqlResult = executeInsert(sql);
+                                logger.info("Result: " + sqlResult.getUpdateCount());
+                                clientOutputWriter.println("Result: " + sqlResult.getUpdateCount());
+                                break;
+                            case "@update":
+                                sqlResult = executeUpdate(sql);
+                                break;
+                            case "@delete":
+                                sqlResult = executeDelete(sql);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Invalid SQL operation: " + sql);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        logger.error("An error occurred: " + e.getMessage());
+                        clientOutputWriter.println("An error occurred: " + e.getMessage());
+                    }
                 }
             }
         }
+    }
+
+    private SqlResult executeSelect(String sql) {
+        return executeSql(sql);
+    }
+
+    private SqlResult executeInsert(String sql) {
+        return executeSql(sql);
+    }
+
+    private SqlResult executeUpdate(String sql) {
+        return executeSql(sql);
+    }
+
+    private SqlResult executeDelete(String sql) {
+        return executeSql(sql);
+    }
+
+    /**
+     * Ejecuta una consulta SQL en la base de datos.
+     *
+     * @param sql la consulta SQL a ejecutar.
+     * @throws SQLException si ocurre un error de base de datos.
+     */
+    private SqlResult executeSql(String sql) {
+        SqlResult sqlResult = new SqlResult();
+
+        // Cambia estos valores por los de tu configuración
+        String url = "jdbc:mysql://localhost/recursos_humano_db";
+        String username = "root";
+        String password = "root";
+
+        try (Connection connection = DriverManager.getConnection(url, username, password);
+             Statement statement = connection.createStatement()) {
+
+            boolean isResultSet = statement.execute(sql);
+            if (isResultSet) {
+                ResultSet resultSet = statement.getResultSet();
+                List<String> results = new ArrayList<>();
+                ResultSetMetaData md = resultSet.getMetaData();
+                int columns = md.getColumnCount();
+                while (resultSet.next()) {
+                    StringBuilder row = new StringBuilder();
+                    for (int i = 1; i <= columns; ++i) {
+                        row.append(resultSet.getObject(i)).append("|");
+                    }
+                    results.add(row.toString());
+                }
+                sqlResult.setResults(results);
+            } else {
+                sqlResult.setUpdateCount(statement.getUpdateCount());
+            }
+
+        } catch (SQLException e) {
+            sqlResult.setException(e);
+        }
+
+        return sqlResult;
     }
 }
