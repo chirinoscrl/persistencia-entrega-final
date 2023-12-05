@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox alignment="TOP_CENTER" minWidth="1000" minHeight="800" spacing="20.0"
+      fx:controller="co.edu.poli.persistencia.cliente.ViewController" xmlns:fx="http://javafx.com/fxml">
+    <padding>
+        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+    </padding>
+
+    <HBox spacing="10.0">
+        <Label text="Nickname:"/>
+        <TextField fx:id="nicknameInput" promptText="Ingrese su nickname"/>
+        <Button text="Conectar" onAction="#onConexion"/>
+        <Label fx:id="statusConexion"/>
+    </HBox>
+
+    <TabPane>
+        <Tab text="Empleado" closable="false">
+            <content>
+                <HBox spacing="10">
+                    <children>
+                        <VBox spacing="10.0">
+                            <HBox spacing="10.0">
+                                <padding>
+                                    <Insets top="30" right="0" bottom="20" left="0"/>
+                                </padding>
+                                <Label text="Empleados:"/>
+                                <TextField fx:id="documentoEmpleadoBuscarField" minWidth="400"/>
+                                <Button text="Submit" onAction="#onBuscarEmpleados"/>
+                            </HBox>
+
+                            <HBox alignment="CENTER">
+                                <Separator maxWidth="100"/>
+                                <Label text=" Información del empleado "/>
+                                <Separator maxWidth="100"/>
+                            </HBox>
+
+                            <Label fx:id="statusOperacion"/>
+
+                            <HBox spacing="10.0">
+                                <Label text="Activo:"/>
+                                <CheckBox fx:id="estadoEmpleado"/>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Documento de identidad:"/>
+                                    <TextField fx:id="docIdentidadEmpleado"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Primer nombre:"/>
+                                    <TextField fx:id="primerNombreEmpleado"/>
+                                </VBox>
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Segundo nombre:"/>
+                                    <TextField fx:id="segundoNombreEmpleado"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Primer apellido:"/>
+                                    <TextField fx:id="primerApellidoEmpleado"/>
+                                </VBox>
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Segundo apellido:"/>
+                                    <TextField fx:id="segundoApellidoEmpleado"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Email:"/>
+                                    <TextField fx:id="emailEmpleado"/>
+                                </VBox>
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Fecha de nacimiento:"/>
+                                    <DatePicker fx:id="fechaNacimientoEmpleado"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Cargo:"/>
+                                    <ComboBox fx:id="cargoEmpleado" minWidth="300"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Sueldo:"/>
+                                    <TextField fx:id="sueldoEmpleado"/>
+                                </VBox>
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Comisión:"/>
+                                    <TextField fx:id="comision"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Departamento:"/>
+                                    <ComboBox fx:id="departamentoEmpleado" minWidth="300" onAction="#handleChangeDepartamento"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <VBox maxWidth="200" minWidth="200" spacing="10">
+                                    <Label text="Gerente:"/>
+                                    <ComboBox fx:id="gerenteEmpleado" minWidth="300"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <Button text="Crear" fx:id="btnCrearEmpleado" onAction="#crearEmpleado"/>
+                                <Button text="Actualizar" fx:id="btnActualizarEmpleado" onAction="#actualizarEmpleado"/>
+                                <Button fx:id="limpiadorBtn" text="Limpiar" onAction="#limpiarCampos"/>
+                                <Button text="Eliminar" fx:id="btnEliminarEmpleado" onAction="#eliminarEmpleado"/>
+                            </HBox>
+                        </VBox>
+                        <VBox spacing="10.0">
+                            <padding>
+                                <Insets top="90" right="0" bottom="20" left="0"/>
+                            </padding>
+                            <HBox alignment="CENTER">
+                                <Separator maxWidth="100"/>
+                                <Label text=" Historico del empleado "/>
+                                <Separator maxWidth="100"/>
+                            </HBox>
+                            <TableView fx:id="historico" layoutX="12.0" layoutY="12.0" prefHeight="376.0" prefWidth="576.0">
+                                <columns>
+                                    <TableColumn fx:id="fechaRetiroHistorico" prefWidth="150.0" text="Fecha retiro" />
+                                    <TableColumn fx:id="cargoHistorico" prefWidth="150.0" text="Cargo" />
+                                    <TableColumn fx:id="DepartamentoHistorico" prefWidth="150.0" text="Departamento" />
+                                    <TableColumn fx:id="LocalizacionHistorico" prefWidth="150.0" text="Localizacion" />
+                                    <TableColumn fx:id="CiudadHistorico" prefWidth="150.0" text="Ciudad" />
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </children>
+                </HBox>
+            </content>
+        </Tab>
+    </TabPane>
+</VBox>
