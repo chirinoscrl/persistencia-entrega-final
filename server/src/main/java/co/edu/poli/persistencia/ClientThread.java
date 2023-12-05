@@ -1,5 +1,6 @@
 package co.edu.poli.persistencia;
 
+import co.edu.poli.persistencia.dto.Empleado;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -162,8 +164,22 @@ class ClientThread extends Thread {
                                     clientOutputWriter.println(mensajeBusqueda);
                                 }
                                 break;
-                            case "@delete":
-                                sqlResult = executeDelete(sql);
+                            case "eliminarEmpleado":
+                                sqlResult = executeEliminarEmpleado(sql);
+                                logger.info("Result eliminarEmpleado: " + sqlResult.getUpdateCount());
+                                clientOutputWriter.println("eliminarEmpleado:" + sqlResult.getUpdateCount());
+                                if (sqlResult.getUpdateCount() == 1) {
+                                    SqlResult sqlResultBusqueda = buscarEmpleado(sql);
+                                    String mensajeBusqueda = "buscarEmpleado:" + sqlResultBusqueda.getResultsList();
+                                    logger.info("Enviando mensaje" + mensajeBusqueda);
+                                    clientOutputWriter.println(mensajeBusqueda);
+                                }
+                                break;
+                            case "historicoEmpleado":
+                                sqlResult = buscarHistoricoEmpleado(sql);
+                                String historicoEmpleadoMensaje = "historicoEmpleado:" + sqlResult.getResultsList();
+                                logger.info("Enviando mensaje" + historicoEmpleadoMensaje);
+                                clientOutputWriter.println(historicoEmpleadoMensaje);
                                 break;
                             default:
                                 throw new IllegalArgumentException("Invalid SQL operation: " + sql);
@@ -187,8 +203,19 @@ class ClientThread extends Thread {
         return executeSql(buscarEmpleadoSql);
     }
 
-    private SqlResult executeSelect(String sql) {
-        return executeSql(sql);
+    private SqlResult buscarHistoricoEmpleado(String sql) {
+        logger.info("Buscar historico empleado: " + sql);
+        Map<String, String> datos = getCamposDeString(sql);
+        String buscarHistoricoEmpleadoSql = String.format(
+                "select * from historico" +
+                        " inner join departamento departamento on historico.departamento_id = departamento.id" +
+                        " inner join localizacion localizacion on departamento.localizacion_id = localizacion.id" +
+                        " inner join ciudad ciudad on ciudad.id = localizacion.ciudad_id" +
+                        " inner join cargo cargo on cargo.id = historico.cargo_id" +
+                        " where empleado_id = %s;",
+                datos.get("empleadoId")
+        );
+        return executeSql(buscarHistoricoEmpleadoSql);
     }
 
     private SqlResult executeInsertEmpleado(String sql) {
@@ -277,8 +304,82 @@ class ClientThread extends Thread {
         return executeSql(updateSql);
     }
 
-    private SqlResult executeDelete(String sql) {
-        return executeSql(sql);
+    private SqlResult executeEliminarEmpleado(String sql) {
+        logger.info("Empleado a eliminar: " + sql);
+        Map<String, String> datos = getCamposDeString(sql);
+
+        // Cambia estos valores por los de tu configuración
+        String url = "jdbc:mysql://localhost/recursos_humano_db";
+        String username = "root";
+        String password = "root";
+        SqlResult sqlResult = new SqlResult();
+
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            connection.setAutoCommit(false);
+
+            try (Statement statement = connection.createStatement()) {
+
+                // 1. Buscar el empleado
+                String buscarEmpleadoSql = String.format("SELECT * FROM empleado WHERE documento_identidad = '%s'", datos.get("documentoIdentidad"));
+                logger.info("Sentencia a ejecutar:" + buscarEmpleadoSql);
+                ResultSet resultSet = statement.executeQuery(buscarEmpleadoSql);
+                if (!resultSet.next()) {
+                    throw new RuntimeException("Empleado no encontrado");
+                }
+
+                // Recuperar los detalles del empleado si se necesitan para las siguientes operaciones
+                String[] datosEmpleado = new String[14];
+                datosEmpleado[0] = String.valueOf(resultSet.getInt("id"));
+                datosEmpleado[1] = resultSet.getString("documento_identidad");
+                datosEmpleado[2] = resultSet.getString("primer_nombre");
+                datosEmpleado[3] = resultSet.getString("segundo_nombre");
+                datosEmpleado[4] = resultSet.getString("primer_apellido");
+                datosEmpleado[5] = resultSet.getString("segundo_apellido");
+                datosEmpleado[6] = resultSet.getString("email");
+                datosEmpleado[7] = resultSet.getDate("fecha_nac").toString(); //suponiendo que fecha_nac es yyyy-mm-dd formato
+                datosEmpleado[8] = resultSet.getBigDecimal("sueldo").toString();
+                datosEmpleado[9] = String.valueOf(resultSet.getInt("comision"));
+                datosEmpleado[10] = String.valueOf(resultSet.getInt("cargo_id"));
+                datosEmpleado[11] = String.valueOf(resultSet.getInt("departamento_id"));
+                datosEmpleado[12] = String.valueOf(resultSet.getInt("gerente_id"));
+                datosEmpleado[13] = String.valueOf(resultSet.getBoolean("estado"));
+
+                Empleado empleado = new Empleado(datosEmpleado);
+
+                // 2. Actualizar empleado
+                String actualizarEmpleadoSql = String.format("UPDATE empleado SET estado = %s WHERE documento_identidad = '%s'", false, datos.get("documentoIdentidad"));
+                logger.info("Sentencia a ejecutar:" + actualizarEmpleadoSql);
+                int updatedRows = statement.executeUpdate(actualizarEmpleadoSql);
+                if (updatedRows != 1) {
+                    throw new RuntimeException("Error al actualizar el estado del empleado");
+                }
+
+                // 3. Insertar en historico
+                LocalDate fechaRetiro = LocalDate.now();
+                String insertHistoricoSql = String.format(
+                        "INSERT INTO historico (empleado_id, cargo_id, departamento_id, fecha_retiro) VALUES ('%s', '%s', '%s', '%s')",
+                        empleado.getId(),
+                        empleado.getCargoId(),
+                        empleado.getDepartamentoId(),
+                        fechaRetiro);
+                logger.info("Sentencia a ejecutar:" + insertHistoricoSql);
+                statement.executeUpdate(insertHistoricoSql);
+
+                connection.commit();
+                sqlResult.setUpdateCount(updatedRows); //or something else that indicates success
+
+            } catch (Exception ex) {
+                connection.rollback();
+                logger.error(ex.getMessage(), ex);
+                sqlResult.setException(new SQLException(ex));
+            }
+
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            sqlResult.setException(e);
+        }
+
+        return sqlResult;
     }
 
     /**

@@ -30,6 +30,7 @@ public class ClientConnect {
     private final Consumer<String> gerentesHandler;
     private final Consumer<String> busquedaEmpleadoHandler;
     private final Consumer<String> actualizarEmpleadoHandler;
+    private final Consumer<String> historicoEmpleadoHandler;
 
     /**
      * Inicializa una nueva instancia de la clase ChatClient.
@@ -44,7 +45,8 @@ public class ClientConnect {
                          Consumer<String> departamentosHandler,
                          Consumer<String> gerentesHandler,
                          Consumer<String> busquedaEmpleadoHandler,
-                         Consumer<String> actualizarEmpleadoHandler
+                         Consumer<String> actualizarEmpleadoHandler,
+                         Consumer<String> historicoEmpleadoHandler
     ) throws IOException {
         socket = new Socket("localhost", 8888);
         buffWriter = new PrintWriter(socket.getOutputStream(), true);
@@ -57,6 +59,7 @@ public class ClientConnect {
         this.gerentesHandler = gerentesHandler;
         this.busquedaEmpleadoHandler = busquedaEmpleadoHandler;
         this.actualizarEmpleadoHandler = actualizarEmpleadoHandler;
+        this.historicoEmpleadoHandler = historicoEmpleadoHandler;
         System.out.println("Connected to server.");
     }
 
@@ -108,6 +111,10 @@ public class ClientConnect {
 
             if (serverMsg.startsWith("actualizarEmpleado:")) {
                 actualizarEmpleadoHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
+            }
+
+            if (serverMsg.startsWith("historicoEmpleado:")) {
+                historicoEmpleadoHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
             }
         }
     }

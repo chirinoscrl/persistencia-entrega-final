@@ -3,15 +3,14 @@ package co.edu.poli.persistencia.cliente;
 import co.edu.poli.persistencia.cliente.dto.Cargo;
 import co.edu.poli.persistencia.cliente.dto.Departamento;
 import co.edu.poli.persistencia.cliente.dto.Empleado;
+import co.edu.poli.persistencia.cliente.dto.Historico;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -81,6 +80,21 @@ public class ViewController {
     private List<Empleado> listadoGerentes;
 
     private List<Empleado> resultadoBusquedaEmpleado;
+    private List<Historico> historicoEmpleados;
+
+    @FXML
+    private TableColumn<Historico, String> fechaRetiroHistorico;
+    @FXML
+    private TableColumn<Historico, String> cargoHistorico;
+    @FXML
+    private TableColumn<Historico, String> DepartamentoHistorico;
+    @FXML
+    private TableColumn<Historico, String> LocalizacionHistorico;
+    @FXML
+    private TableColumn<Historico, String> CiudadHistorico;
+    @FXML
+    private TableView<Historico> historico;
+    private ObservableList<Historico> listaHistoricos;
 
     /**
      * Este método normalmente es llamado después de que el archivo FXML ha sido cargado y el controlador ha sido creado.
@@ -95,6 +109,32 @@ public class ViewController {
 
         gerentes = FXCollections.observableArrayList();
         gerenteEmpleado.setItems(gerentes);
+
+        fechaRetiroHistorico.setCellValueFactory(new PropertyValueFactory<>("fechaRetiro"));
+        cargoHistorico.setCellValueFactory(new PropertyValueFactory<>("cargo"));
+        DepartamentoHistorico.setCellValueFactory(new PropertyValueFactory<>("departamento"));
+        LocalizacionHistorico.setCellValueFactory(new PropertyValueFactory<>("localizacion"));
+        CiudadHistorico.setCellValueFactory(new PropertyValueFactory<>("ciudad"));
+
+        listaHistoricos = FXCollections.observableArrayList();
+        historico.setItems(listaHistoricos);
+
+        // Calculamos las fechas de límite (18 años atrás y 70 años atrás desde hoy)
+        LocalDate maxDate = LocalDate.now().minusYears(18); // Personas mayores de 18 años
+        LocalDate minDate = LocalDate.now().minusYears(70); // Personas menores de 70 años
+
+        // Añadimos un listener para la fecha seleccionada en el DatePicker
+        fechaNacimientoEmpleado.valueProperty().addListener((ov, oldValue, newValue) -> {
+            if (newValue != null &&
+                    (newValue.isAfter(maxDate) || newValue.isBefore(minDate))) {
+                // Si la fecha seleccionada está fuera del rango permitido,
+                // regresamos el valor del DatePicker a la fecha anterior válida
+                fechaNacimientoEmpleado.setValue(oldValue);
+            }
+        });
+
+        // Configuramos la fecha inicial en el DatePicker a nuestra fecha máxima permitida
+        fechaNacimientoEmpleado.setValue(maxDate);
     }
 
     public void onConexion(ActionEvent actionEvent) {
@@ -105,7 +145,8 @@ public class ViewController {
                     departamentos -> Platform.runLater(() -> obtenerListadoDepartamentos(departamentos)),
                     gerentes -> Platform.runLater(() -> obtenerListadoGerentes(gerentes)),
                     empleado -> Platform.runLater(() -> obtenerBusquedaEmpleado(empleado)),
-                    actualizadoEmpleado -> Platform.runLater(() -> actualizadoEmpleado(actualizadoEmpleado))
+                    actualizadoEmpleado -> Platform.runLater(() -> actualizadoEmpleado(actualizadoEmpleado)),
+                    historicoEmpleado -> Platform.runLater(() -> historicoEmpleado(historicoEmpleado))
             );
 
             // Deshabilita el botón de conexión y cambia la etiqueta de estado después de la conexión
@@ -147,21 +188,31 @@ public class ViewController {
                     Empleado empleado = new Empleado(properties);
                     resultadoBusquedaEmpleado.add(empleado);
                 }
+
+                Empleado empleadoEncontrado = resultadoBusquedaEmpleado.get(0);
+                System.out.println("Empleado encontrado: " + empleadoEncontrado);
+                estadoEmpleado.setSelected(empleadoEncontrado.isEstado());
+                docIdentidadEmpleado.setText(empleadoEncontrado.getIdentificacion());
+                primerNombreEmpleado.setText(empleadoEncontrado.getPrimerNombre());
+                segundoNombreEmpleado.setText(empleadoEncontrado.getSegundoNombre());
+                primerApellidoEmpleado.setText(empleadoEncontrado.getPrimerApellido());
+                segundoApellidoEmpleado.setText(empleadoEncontrado.getSegundoApellido());
+                emailEmpleado.setText(empleadoEncontrado.getEmail());
+                fechaNacimientoEmpleado.setValue(LocalDate.parse(empleadoEncontrado.getFechaNacimiento()));
+                sueldoEmpleado.setText(empleadoEncontrado.getSalario());
+                comision.setText(empleadoEncontrado.getComision());
+                encontrarYSeleccionarCargo(empleadoEncontrado.getCargoId());
+                encontrarYSeleccionarDepartamento(empleadoEncontrado.getDepartamentoId());
+
+                String buscarHistoricoMensaje = "@ClientNickname:historicoEmpleado:empleadoId=" + empleadoEncontrado.getId();
+                try {
+                    client.sendMessage(buscarHistoricoMensaje);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                limpiarCampos();
             }
-            Empleado empleadoEncontrado = resultadoBusquedaEmpleado.get(0);
-            System.out.println("Empleado encontrado: " + empleadoEncontrado);
-            estadoEmpleado.setSelected(empleadoEncontrado.isEstado());
-            docIdentidadEmpleado.setText(empleadoEncontrado.getIdentificacion());
-            primerNombreEmpleado.setText(empleadoEncontrado.getPrimerNombre());
-            segundoNombreEmpleado.setText(empleadoEncontrado.getSegundoNombre());
-            primerApellidoEmpleado.setText(empleadoEncontrado.getPrimerApellido());
-            segundoApellidoEmpleado.setText(empleadoEncontrado.getSegundoApellido());
-            emailEmpleado.setText(empleadoEncontrado.getEmail());
-            fechaNacimientoEmpleado.setValue(LocalDate.parse(empleadoEncontrado.getFechaNacimiento()));
-            sueldoEmpleado.setText(empleadoEncontrado.getSalario());
-            comision.setText(empleadoEncontrado.getComision());
-            encontrarYSeleccionarCargo(empleadoEncontrado.getCargoId());
-            encontrarYSeleccionarDepartamento(empleadoEncontrado.getDepartamentoId());
         });
     }
 
@@ -232,13 +283,16 @@ public class ViewController {
     public void handleChangeDepartamento(ActionEvent actionEvent) {
         String selectedItems = departamentoEmpleado.getSelectionModel().getSelectedItem();
         System.out.println("Selected item: " + selectedItems);
-        Departamento departamentoId = buscarDepartamentoPorNombre(selectedItems).get();
-        String msg = "@ClientNickname:obtenerListadoGerentes:" + departamentoId.getId();
 
-        try {
-            client.sendMessage(msg);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (selectedItems != null) {
+            Departamento departamentoId = buscarDepartamentoPorNombre(selectedItems).get();
+            String msg = "@ClientNickname:obtenerListadoGerentes:" + departamentoId.getId();
+
+            try {
+                client.sendMessage(msg);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -365,7 +419,7 @@ public class ViewController {
         }
     }
 
-    public void limpiarCampos(ActionEvent actionEvent) {
+    public void limpiarCampos() {
         docIdentidadEmpleado.clear();
         primerNombreEmpleado.clear();
         segundoNombreEmpleado.clear();
@@ -379,8 +433,36 @@ public class ViewController {
         comision.clear();
         departamentoEmpleado.setValue(null);
         gerenteEmpleado.setValue(null);
+        listaHistoricos.clear();
     }
 
     public void eliminarEmpleado(ActionEvent actionEvent) {
+        String docIdentidad = docIdentidadEmpleado.getText();
+        StringBuilder empleadoInfo = new StringBuilder();
+        empleadoInfo
+                .append("@ClientNickname:eliminarEmpleado:")
+                .append("documentoIdentidad=").append(docIdentidad);
+        try {
+            client.sendMessage(empleadoInfo.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void historicoEmpleado(String historicoStr) {
+        Platform.runLater(() -> {
+            System.out.println(historicoStr);
+            historicoEmpleados = new ArrayList<>();
+            listaHistoricos.clear();
+            String[] historicosStrings = historicoStr.substring(1, historicoStr.length() - 1).split(",");
+            if (!historicosStrings[0].equals("") && !historicoStr.equals("null")) {
+                for (String historicoString : historicosStrings) {
+                    String[] properties = historicoString.split("\\|");
+                    Historico historico = new Historico(properties);
+                    historicoEmpleados.add(historico);
+                    listaHistoricos.add(historico);
+                }
+            }
+        });
     }
 }
