@@ -1,4 +1,4 @@
-package co.edu.poli.persistencia;
+package co.edu.poli.persistencia.server;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

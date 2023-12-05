@@ -143,6 +143,10 @@ public class ViewController {
         fechaNacimientoEmpleado.setValue(maxDate);
     }
 
+    /**
+     * Este método se utiliza para establecer una conexión con el servidor.
+     * @param actionEvent El evento del botón de conexión.
+     */
     public void onConexion(ActionEvent actionEvent) {
         try {
             nickname = nicknameInput.getText();
@@ -178,6 +182,11 @@ public class ViewController {
         }
     }
 
+    /**
+     * Este método se utiliza para actualizar un empleado en base a un resultado obtenido del servidor.
+     *
+     * @param actualizadoEmpleado El resultado de la actualización del empleado.
+     */
     private void actualizadoEmpleado(String actualizadoEmpleado) {
         Platform.runLater(() -> {
             System.out.println("Resultado de actualizacion:" + actualizadoEmpleado);
@@ -189,6 +198,11 @@ public class ViewController {
         });
     }
 
+    /**
+     * Este método se utiliza para manejar el resultado de la creación de un empleado.
+     *
+     * @param creacionEmpleado El resultado de la creación del empleado.
+     */
     private void creacionEmpleado(String creacionEmpleado) {
         Platform.runLater(() -> {
             System.out.println("Resultado de creacion:" + creacionEmpleado);
@@ -200,6 +214,11 @@ public class ViewController {
         });
     }
 
+    /**
+     * Este método se utiliza para obtener y manejar la búsqueda de un empleado.
+     *
+     * @param empleadoStr La cadena que contiene los datos del empleado buscado.
+     */
     private void obtenerBusquedaEmpleado(String empleadoStr) {
         Platform.runLater(() -> {
             System.out.println(empleadoStr);
@@ -239,6 +258,11 @@ public class ViewController {
         });
     }
 
+    /**
+     * Este método se utiliza para encontrar y seleccionar el cargo de un empleado.
+     *
+     * @param cargoId El ID del cargo que se quiere encontrar y seleccionar.
+     */
     private void encontrarYSeleccionarCargo(int cargoId) {
         for (Cargo cargo : listadoCargos) {
             if (cargo.getId() == cargoId) {
@@ -248,6 +272,11 @@ public class ViewController {
         }
     }
 
+    /**
+     * Este método se utiliza para encontrar y seleccionar el departamento de un empleado.
+     *
+     * @param departamentoId El ID del departamento que se quiere encontrar y seleccionar.
+     */
     private void encontrarYSeleccionarDepartamento(int departamentoId) {
         for (Departamento departamento : listadoDepartamentos) {
             if (departamento.getId() == departamentoId) {
@@ -257,6 +286,11 @@ public class ViewController {
         }
     }
 
+    /**
+     * Este método se utiliza para buscar empleados a través de su documento de identidad.
+     *
+     * @param actionEvent El evento que dispara la búsqueda de empleados.
+     */
     public void onBuscarEmpleados(ActionEvent actionEvent) {
         String documentoEmpleadoBuscar = documentoEmpleadoBuscarField.getText();
         String sqlCommand = "@ClientNickname:buscarEmpleado:documentoIdentidad=" + documentoEmpleadoBuscar;
@@ -268,6 +302,11 @@ public class ViewController {
         }
     }
 
+    /**
+     * Este método se utiliza para obtener un listado de cargos a partir de una cadena de texto.
+     *
+     * @param cargosStr La cadena de texto que contiene la información de los cargos.
+     */
     public void obtenerListadoCargos(String cargosStr) {
         Platform.runLater(() -> {
             System.out.println(cargosStr);
@@ -286,6 +325,11 @@ public class ViewController {
         });
     }
 
+    /**
+     * Este método se utiliza para obtener un listado de departamentos a partir de una cadena de texto.
+     *
+     * @param departamentosStr La cadena de texto que contiene la información de los departamentos.
+     */
     public void obtenerListadoDepartamentos(String departamentosStr) {
         Platform.runLater(() -> {
             System.out.println(departamentosStr);
@@ -303,6 +347,11 @@ public class ViewController {
         });
     }
 
+    /**
+     * Este método se utiliza para manejar el evento de cambio de departamento.
+     *
+     * @param actionEvent El objeto de evento que desencadena el cambio de departamento.
+     */
     public void handleChangeDepartamento(ActionEvent actionEvent) {
         String selectedItems = departamentoEmpleado.getSelectionModel().getSelectedItem();
         System.out.println("Selected item: " + selectedItems);
@@ -319,7 +368,11 @@ public class ViewController {
         }
     }
 
-
+    /**
+     * Este método se utiliza para obtener el listado de gerentes.
+     *
+     * @param gerentesStr Una cadena que representa el listado de gerentes.
+     */
     private void obtenerListadoGerentes(String gerentesStr) {
         Platform.runLater(() -> {
             System.out.println(gerentesStr);
@@ -347,6 +400,11 @@ public class ViewController {
         });
     }
 
+    /**
+     * Este método se utiliza para crear un nuevo empleado.
+     *
+     * @param actionEvent El evento de acción que activó el método.
+     */
     public void crearEmpleado(ActionEvent actionEvent) {
         String docIdentidad = docIdentidadEmpleado.getText();
         String primerNombre = primerNombreEmpleado.getText();
@@ -391,25 +449,47 @@ public class ViewController {
         }
     }
 
-
+    /**
+     * Este método se utiliza para buscar un departamento por su nombre.
+     *
+     * @param nombre El nombre del departamento que se busca.
+     * @return Un Optional que contiene el departamento si se encuentra, o un Optional vacío si no se encuentra.
+     */
     public Optional<Departamento> buscarDepartamentoPorNombre(String nombre) {
         return listadoDepartamentos.stream()
                 .filter(departamento -> departamento.getNombre().equals(nombre))
                 .findFirst();
     }
 
+    /**
+     * Este método se utiliza para buscar un cargo por su nombre.
+     *
+     * @param nombre El nombre del cargo que se busca.
+     * @return Un Optional que contiene el cargo si se encuentra, o un Optional vacío si no se encuentra.
+     */
     public Optional<Cargo> buscarCargoPorNombre(String nombre) {
         return listadoCargos.stream()
                 .filter(cargo -> cargo.getNombre().equals(nombre))
                 .findFirst();
     }
 
+    /**
+     * Este método se utiliza para buscar un gerente por su nombre.
+     *
+     * @param nombre El nombre del gerente que se busca.
+     * @return Un Optional que contiene el gerente si se encuentra, o un Optional vacío si no se encuentra.
+     */
     public Optional<Empleado> buscarGerentePorNombre(String nombre) {
         return listadoGerentes.stream()
                 .filter(empleado -> empleado.getFullName().equals(nombre))
                 .findFirst();
     }
 
+    /**
+     * Este método se utiliza para actualizar la información de un empleado.
+     *
+     * @param actionEvent El evento de acción que desencadena la actualización del empleado.
+     */
     public void actualizarEmpleado(ActionEvent actionEvent) {
         String docIdentidad = docIdentidadEmpleado.getText();
         String primerNombre = primerNombreEmpleado.getText();
@@ -455,6 +535,9 @@ public class ViewController {
         }
     }
 
+    /**
+     * Este método se utiliza para limpiar todos los campos del formulario de empleado.
+     */
     public void limpiarCampos() {
         docIdentidadEmpleado.clear();
         primerNombreEmpleado.clear();
@@ -472,6 +555,11 @@ public class ViewController {
         listaHistoricos.clear();
     }
 
+    /**
+     * Este método se utiliza para eliminar un empleado.
+     *
+     * @param actionEvent El evento que desencadena la acción de eliminar empleado.
+     */
     public void eliminarEmpleado(ActionEvent actionEvent) {
         String docIdentidad = docIdentidadEmpleado.getText();
         StringBuilder empleadoInfo = new StringBuilder();
@@ -485,6 +573,11 @@ public class ViewController {
         }
     }
 
+    /**
+     * Este método se utiliza para actualizar el historial de empleados.
+     *
+     * @param historicoStr String que contiene la información del historial de empleados.
+     */
     public void historicoEmpleado(String historicoStr) {
         Platform.runLater(() -> {
             System.out.println(historicoStr);
@@ -500,9 +593,5 @@ public class ViewController {
                 }
             }
         });
-    }
-
-    public void handleChangeDepartamentoGeneral(ActionEvent actionEvent) {
-
     }
 }

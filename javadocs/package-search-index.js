@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"co.edu.poli.persistencia.cliente"},{"l":"co.edu.poli.persistencia.cliente.dto"},{"l":"co.edu.poli.persistencia.server"},{"l":"co.edu.poli.persistencia.server.dto"}]

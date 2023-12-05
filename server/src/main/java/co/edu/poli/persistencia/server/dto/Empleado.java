@@ -1,4 +1,4 @@
-package co.edu.poli.persistencia.dto;
+package co.edu.poli.persistencia.server.dto;
 
 public class Empleado {
     private int id;

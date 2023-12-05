@@ -1,6 +1,6 @@
-package co.edu.poli.persistencia;
+package co.edu.poli.persistencia.server;
 
-import co.edu.poli.persistencia.dto.Empleado;
+import co.edu.poli.persistencia.server.dto.Empleado;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -193,6 +193,12 @@ class ClientThread extends Thread {
         }
     }
 
+    /**
+     * Busca un empleado en la base de datos según el SQL proporcionado.
+     *
+     * @param sql el SQL para buscar al empleado.
+     * @return un objeto SqlResult con los resultados de la búsqueda.
+     */
     private SqlResult buscarEmpleado(String sql) {
         logger.info("Buscar empleado: " + sql);
         Map<String, String> datos = getCamposDeString(sql);
@@ -203,6 +209,12 @@ class ClientThread extends Thread {
         return executeSql(buscarEmpleadoSql);
     }
 
+    /**
+     * Busca el historial de un empleado en la base de datos según el SQL proporcionado.
+     *
+     * @param sql el SQL para buscar el historial del empleado.
+     * @return un objeto SqlResult con los resultados de la búsqueda del historial.
+     */
     private SqlResult buscarHistoricoEmpleado(String sql) {
         logger.info("Buscar historico empleado: " + sql);
         Map<String, String> datos = getCamposDeString(sql);
@@ -218,6 +230,12 @@ class ClientThread extends Thread {
         return executeSql(buscarHistoricoEmpleadoSql);
     }
 
+    /**
+     * Ejecuta una sentencia SQL para insertar un empleado en la base de datos.
+     *
+     * @param sql el SQL para insertar el empleado.
+     * @return un objeto SqlResult con los resultados de la ejecución de la sentencia SQL.
+     */
     private SqlResult executeInsertEmpleado(String sql) {
         logger.info("Empleado a insertar: " + sql);
         Map<String, String> datos = getCamposDeString(sql);
@@ -245,6 +263,12 @@ class ClientThread extends Thread {
         return executeSql(insertSql);
     }
 
+    /**
+     * Retorna un mapa que contiene los campos y valores extraídos de una cadena de texto.
+     *
+     * @param sql la cadena de texto que contiene los campos y valores en formato clave=valor.
+     * @return un mapa que contiene los campos y valores extraídos de la cadena de texto.
+     */
     private static Map<String, String> getCamposDeString(String sql) {
         Map<String, String> datos = new HashMap<>();
 
@@ -265,6 +289,12 @@ class ClientThread extends Thread {
         return datos;
     }
 
+    /**
+     * Actualiza los datos de un empleado en la base de datos.
+     *
+     * @param sql la cadena de texto que contiene los campos y valores a actualizar en formato clave=valor.
+     * @return un objeto de tipo SqlResult que contiene el resultado de la ejecución de la sentencia SQL.
+     */
     private SqlResult actualizarEmpleado(String sql) {
         logger.info("Empleado a actualizar: " + sql);
         Map<String, String> datos = getCamposDeString(sql);
@@ -304,21 +334,23 @@ class ClientThread extends Thread {
         return executeSql(updateSql);
     }
 
+    /**
+     * Ejecuta la eliminación de un empleado en la base de datos.
+     *
+     * @param sql la cadena de texto que contiene los campos y valores necesarios para la eliminación.
+     * @return un objeto de tipo SqlResult que contiene el resultado de la ejecución de la sentencia SQL.
+     */
     private SqlResult executeEliminarEmpleado(String sql) {
         logger.info("Empleado a eliminar: " + sql);
         Map<String, String> datos = getCamposDeString(sql);
-
         // Cambia estos valores por los de tu configuración
         String url = "jdbc:mysql://localhost/recursos_humano_db";
         String username = "root";
         String password = "root";
         SqlResult sqlResult = new SqlResult();
-
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             connection.setAutoCommit(false);
-
             try (Statement statement = connection.createStatement()) {
-
                 // 1. Buscar el empleado
                 String buscarEmpleadoSql = String.format("SELECT * FROM empleado WHERE documento_identidad = '%s'", datos.get("documentoIdentidad"));
                 logger.info("Sentencia a ejecutar:" + buscarEmpleadoSql);
@@ -326,26 +358,9 @@ class ClientThread extends Thread {
                 if (!resultSet.next()) {
                     throw new RuntimeException("Empleado no encontrado");
                 }
-
                 // Recuperar los detalles del empleado si se necesitan para las siguientes operaciones
-                String[] datosEmpleado = new String[14];
-                datosEmpleado[0] = String.valueOf(resultSet.getInt("id"));
-                datosEmpleado[1] = resultSet.getString("documento_identidad");
-                datosEmpleado[2] = resultSet.getString("primer_nombre");
-                datosEmpleado[3] = resultSet.getString("segundo_nombre");
-                datosEmpleado[4] = resultSet.getString("primer_apellido");
-                datosEmpleado[5] = resultSet.getString("segundo_apellido");
-                datosEmpleado[6] = resultSet.getString("email");
-                datosEmpleado[7] = resultSet.getDate("fecha_nac").toString(); //suponiendo que fecha_nac es yyyy-mm-dd formato
-                datosEmpleado[8] = resultSet.getBigDecimal("sueldo").toString();
-                datosEmpleado[9] = String.valueOf(resultSet.getInt("comision"));
-                datosEmpleado[10] = String.valueOf(resultSet.getInt("cargo_id"));
-                datosEmpleado[11] = String.valueOf(resultSet.getInt("departamento_id"));
-                datosEmpleado[12] = String.valueOf(resultSet.getInt("gerente_id"));
-                datosEmpleado[13] = String.valueOf(resultSet.getBoolean("estado"));
-
+                String[] datosEmpleado = getDatosEmpleado(resultSet);
                 Empleado empleado = new Empleado(datosEmpleado);
-
                 // 2. Actualizar empleado
                 String actualizarEmpleadoSql = String.format("UPDATE empleado SET estado = %s WHERE documento_identidad = '%s'", false, datos.get("documentoIdentidad"));
                 logger.info("Sentencia a ejecutar:" + actualizarEmpleadoSql);
@@ -353,7 +368,6 @@ class ClientThread extends Thread {
                 if (updatedRows != 1) {
                     throw new RuntimeException("Error al actualizar el estado del empleado");
                 }
-
                 // 3. Insertar en historico
                 LocalDate fechaRetiro = LocalDate.now();
                 String insertHistoricoSql = String.format(
@@ -364,7 +378,6 @@ class ClientThread extends Thread {
                         fechaRetiro);
                 logger.info("Sentencia a ejecutar:" + insertHistoricoSql);
                 statement.executeUpdate(insertHistoricoSql);
-
                 connection.commit();
                 sqlResult.setUpdateCount(updatedRows); //or something else that indicates success
 
@@ -380,6 +393,32 @@ class ClientThread extends Thread {
         }
 
         return sqlResult;
+    }
+
+    /**
+     * Recupera los datos de un empleado a partir de un ResultSet.
+     *
+     * @param resultSet el ResultSet que contiene los datos del empleado.
+     * @return un array de Strings con los datos del empleado.
+     * @throws SQLException si ocurre un error al acceder a los datos del ResultSet.
+     */
+    private static String[] getDatosEmpleado(ResultSet resultSet) throws SQLException {
+        String[] datosEmpleado = new String[14];
+        datosEmpleado[0] = String.valueOf(resultSet.getInt("id"));
+        datosEmpleado[1] = resultSet.getString("documento_identidad");
+        datosEmpleado[2] = resultSet.getString("primer_nombre");
+        datosEmpleado[3] = resultSet.getString("segundo_nombre");
+        datosEmpleado[4] = resultSet.getString("primer_apellido");
+        datosEmpleado[5] = resultSet.getString("segundo_apellido");
+        datosEmpleado[6] = resultSet.getString("email");
+        datosEmpleado[7] = resultSet.getDate("fecha_nac").toString(); //suponiendo que fecha_nac es yyyy-mm-dd formato
+        datosEmpleado[8] = resultSet.getBigDecimal("sueldo").toString();
+        datosEmpleado[9] = String.valueOf(resultSet.getInt("comision"));
+        datosEmpleado[10] = String.valueOf(resultSet.getInt("cargo_id"));
+        datosEmpleado[11] = String.valueOf(resultSet.getInt("departamento_id"));
+        datosEmpleado[12] = String.valueOf(resultSet.getInt("gerente_id"));
+        datosEmpleado[13] = String.valueOf(resultSet.getBoolean("estado"));
+        return datosEmpleado;
     }
 
     /**
