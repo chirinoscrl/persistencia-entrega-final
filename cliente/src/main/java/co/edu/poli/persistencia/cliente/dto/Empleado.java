@@ -1,7 +1,7 @@
 package co.edu.poli.persistencia.cliente.dto;
 
 public class Empleado {
-    private String id;
+    private int id;
     private String identificacion;
     private String primerNombre;
     private String segundoNombre;
@@ -10,13 +10,14 @@ public class Empleado {
     private String email;
     private String fechaNacimiento;
     private String salario;
-    private String direccion;
-    private String idCiudad;
-    private String idTipoIdentificacion;
-    private String idCargo;
+    private String comision;
+    private int cargoId;
+    private int departamentoId;
+    private int gerenteId;
+    private boolean estado;
 
     public Empleado(String[] datos){
-        this.id = datos[0];
+        this.id = getParseInt(datos[0].trim());
         this.identificacion = datos[1];
         this.primerNombre = datos[2];
         this.segundoNombre = datos[3];
@@ -25,18 +26,27 @@ public class Empleado {
         this.email = datos[6];
         this.fechaNacimiento = datos[7];
         this.salario = datos[8];
-        this.direccion = datos[9];
-        this.idCiudad = datos[10];
-        this.idTipoIdentificacion = datos[11];
-        this.idCargo = datos[12];
+        this.comision = datos[9];
+        this.cargoId = getParseInt(datos[10].trim());
+        this.departamentoId = getParseInt(datos[11].trim());
+        this.gerenteId = getParseInt(datos[12].trim());
+        this.estado = Boolean.parseBoolean(datos[13]);
     }
 
-    public String getId() {
+    private static int getParseInt(String datos) {
+        if (datos.isEmpty() || datos.equals("null")) {
+            return 0;
+        }
+
+        return Integer.parseInt(datos);
+    }
+
+    public int getId() {
         return id;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = getParseInt(id);
     }
 
     public String getIdentificacion() {
@@ -48,6 +58,10 @@ public class Empleado {
     }
 
     public String getPrimerNombre() {
+        if (primerNombre.isEmpty() || primerNombre.equals("null")) {
+            return "";
+        }
+
         return primerNombre;
     }
 
@@ -56,6 +70,10 @@ public class Empleado {
     }
 
     public String getSegundoNombre() {
+        if (segundoNombre.isEmpty() || segundoNombre.equals("null")) {
+            return "";
+        }
+
         return segundoNombre;
     }
 
@@ -64,6 +82,10 @@ public class Empleado {
     }
 
     public String getPrimerApellido() {
+        if (primerApellido.isEmpty() || primerApellido.equals("null")) {
+            return "";
+        }
+
         return primerApellido;
     }
 
@@ -72,6 +94,9 @@ public class Empleado {
     }
 
     public String getSegundoApellido() {
+        if (segundoApellido.isEmpty() || segundoApellido.equals("null")) {
+            return "";
+        }
         return segundoApellido;
     }
 
@@ -80,6 +105,10 @@ public class Empleado {
     }
 
     public String getEmail() {
+        if (email.isEmpty() || email.equals("null")) {
+            return "";
+        }
+
         return email;
     }
 
@@ -103,36 +132,47 @@ public class Empleado {
         this.salario = salario;
     }
 
-    public String getDireccion() {
-        return direccion;
+    public String getComision() {
+        if (comision.isEmpty() || comision.equals("null")) {
+            return "";
+        }
+        return comision;
     }
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
+    public void setComision(String comision) {
+        this.comision = comision;
     }
 
-    public String getIdCiudad() {
-        return idCiudad;
+    public int getCargoId() {
+        return cargoId;
     }
 
-    public void setIdCiudad(String idCiudad) {
-        this.idCiudad = idCiudad;
+    public void setCargoId(String cargoId) {
+        this.cargoId = getParseInt(cargoId);
     }
 
-    public String getIdTipoIdentificacion() {
-        return idTipoIdentificacion;
+    public int getDepartamentoId() {
+        return departamentoId;
     }
 
-    public void setIdTipoIdentificacion(String idTipoIdentificacion) {
-        this.idTipoIdentificacion = idTipoIdentificacion;
+    public void setDepartamentoId(String departamentoId) {
+        this.departamentoId = getParseInt(departamentoId);
     }
 
-    public String getIdCargo() {
-        return idCargo;
+    public int getGerenteId() {
+        return gerenteId;
     }
 
-    public void setIdCargo(String idCargo) {
-        this.idCargo = idCargo;
+    public void setGerenteId(String gerenteId) {
+        this.gerenteId = getParseInt(gerenteId);
+    }
+
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
     }
 
     public String getFullName() {
@@ -142,10 +182,20 @@ public class Empleado {
     @Override
     public String toString() {
         return "Empleado{" +
-                "identificacion='" + identificacion + '\'' +
+                "id='" + id + '\'' +
+                ", identificacion='" + identificacion + '\'' +
                 ", primerNombre='" + primerNombre + '\'' +
+                ", segundoNombre='" + segundoNombre + '\'' +
                 ", primerApellido='" + primerApellido + '\'' +
-                ", idTipoIdentificacion='" + idTipoIdentificacion + '\'' +
+                ", segundoApellido='" + segundoApellido + '\'' +
+                ", email='" + email + '\'' +
+                ", fechaNacimiento='" + fechaNacimiento + '\'' +
+                ", salario='" + salario + '\'' +
+                ", comision='" + comision + '\'' +
+                ", cargoId='" + cargoId + '\'' +
+                ", departamentoId='" + departamentoId + '\'' +
+                ", gerenteId='" + gerenteId + '\'' +
+                ", estado=" + estado +
                 '}';
     }
 }

@@ -1,24 +1,24 @@
 package co.edu.poli.persistencia.cliente.dto;
 
 public class Cargo {
-    private String id;
+    private int id;
     private String nombre;
     private int salarioBasico;
     private int salarioTotal;
 
     public Cargo(String[] datos){
-        this.id = datos[0].trim();
+        this.id = Integer.parseInt(datos[0].trim());
         this.nombre = datos[1].trim();
         this.salarioBasico = Integer.parseInt(datos[2].trim());
         this.salarioTotal = Integer.parseInt(datos[3].trim());
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = Integer.parseInt(id);
     }
 
     public String getNombre() {

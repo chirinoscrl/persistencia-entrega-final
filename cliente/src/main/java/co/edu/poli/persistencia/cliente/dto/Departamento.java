@@ -1,25 +1,22 @@
 package co.edu.poli.persistencia.cliente.dto;
 
-import java.util.List;
-import java.util.Optional;
-
 public class Departamento {
-    private String id;
+    private int id;
     private String nombre;
     private int localizacionId;
 
     public Departamento(String[] datos) {
-        this.id = datos[0].trim();
+        this.id = Integer.parseInt(datos[0].trim());
         this.nombre = datos[1].trim();
         this.localizacionId = Integer.parseInt(datos[2].trim());
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
     public void setId(String id) {
-        this.id = id;
+        this.id = Integer.parseInt(id);
     }
 
     public String getNombre() {

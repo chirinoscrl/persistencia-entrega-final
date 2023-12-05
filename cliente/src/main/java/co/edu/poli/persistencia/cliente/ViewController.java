@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ViewController {
@@ -79,6 +80,8 @@ public class ViewController {
     private List<Cargo> listadoCargos;
     private List<Empleado> listadoGerentes;
 
+    private List<Empleado> resultadoBusquedaEmpleado;
+
     /**
      * Este método normalmente es llamado después de que el archivo FXML ha sido cargado y el controlador ha sido creado.
      */
@@ -100,7 +103,10 @@ public class ViewController {
             client = new ClientConnect(nickname,
                     cargos -> Platform.runLater(() -> obtenerListadoCargos(cargos)),
                     departamentos -> Platform.runLater(() -> obtenerListadoDepartamentos(departamentos)),
-                    gerentes -> Platform.runLater(() -> obtenerListadoGerentes(gerentes)));
+                    gerentes -> Platform.runLater(() -> obtenerListadoGerentes(gerentes)),
+                    empleado -> Platform.runLater(() -> obtenerBusquedaEmpleado(empleado)),
+                    actualizadoEmpleado -> Platform.runLater(() -> actualizadoEmpleado(actualizadoEmpleado))
+            );
 
             // Deshabilita el botón de conexión y cambia la etiqueta de estado después de la conexión
             // connectButton.setDisable(true);
@@ -124,9 +130,62 @@ public class ViewController {
         }
     }
 
+    private void actualizadoEmpleado(String actualizadoEmpleado) {
+        Platform.runLater(() -> {
+            System.out.println(actualizadoEmpleado);
+        });
+    }
+
+    private void obtenerBusquedaEmpleado(String empleadoStr) {
+        Platform.runLater(() -> {
+            System.out.println(empleadoStr);
+            resultadoBusquedaEmpleado = new ArrayList<>();
+            String[] empleadoStrings = empleadoStr.substring(1, empleadoStr.length() - 1).split(",");
+            if (!empleadoStrings[0].equals("") && !empleadoStr.equals("null")) {
+                for (String empleadoString : empleadoStrings) {
+                    String[] properties = empleadoString.split("\\|");
+                    Empleado empleado = new Empleado(properties);
+                    resultadoBusquedaEmpleado.add(empleado);
+                }
+            }
+            Empleado empleadoEncontrado = resultadoBusquedaEmpleado.get(0);
+            System.out.println("Empleado encontrado: " + empleadoEncontrado);
+            estadoEmpleado.setSelected(empleadoEncontrado.isEstado());
+            docIdentidadEmpleado.setText(empleadoEncontrado.getIdentificacion());
+            primerNombreEmpleado.setText(empleadoEncontrado.getPrimerNombre());
+            segundoNombreEmpleado.setText(empleadoEncontrado.getSegundoNombre());
+            primerApellidoEmpleado.setText(empleadoEncontrado.getPrimerApellido());
+            segundoApellidoEmpleado.setText(empleadoEncontrado.getSegundoApellido());
+            emailEmpleado.setText(empleadoEncontrado.getEmail());
+            fechaNacimientoEmpleado.setValue(LocalDate.parse(empleadoEncontrado.getFechaNacimiento()));
+            sueldoEmpleado.setText(empleadoEncontrado.getSalario());
+            comision.setText(empleadoEncontrado.getComision());
+            encontrarYSeleccionarCargo(empleadoEncontrado.getCargoId());
+            encontrarYSeleccionarDepartamento(empleadoEncontrado.getDepartamentoId());
+        });
+    }
+
+    private void encontrarYSeleccionarCargo(int cargoId) {
+        for (Cargo cargo : listadoCargos) {
+            if (cargo.getId() == cargoId) {
+                cargoEmpleado.getSelectionModel().select(cargo.getNombre());
+                break;
+            }
+        }
+    }
+
+    private void encontrarYSeleccionarDepartamento(int departamentoId) {
+        for (Departamento departamento : listadoDepartamentos) {
+            if (departamento.getId() == departamentoId) {
+                departamentoEmpleado.getSelectionModel().select(departamento.getNombre());
+                break;
+            }
+        }
+    }
+
     public void onBuscarEmpleados(ActionEvent actionEvent) {
         String documentoEmpleadoBuscar = documentoEmpleadoBuscarField.getText();
-        String sqlCommand = "@ClientNickname:todosEmpleados:select * from empleado where documento_identidad = '" + documentoEmpleadoBuscar + "';";
+        String sqlCommand = "@ClientNickname:buscarEmpleado:documentoIdentidad=" + documentoEmpleadoBuscar;
 
         try {
             client.sendMessage(sqlCommand);
@@ -198,6 +257,15 @@ public class ViewController {
                     listadoGerentes.add(gerente);
                     gerentes.add(gerente.getFullName());
                 }
+
+                if (!Objects.equals(resultadoBusquedaEmpleado.get(0).getGerenteId(), "")) {
+                    for (Empleado gerente : listadoGerentes) {
+                        if (gerente.getId() == resultadoBusquedaEmpleado.get(0).getGerenteId()) {
+                            gerenteEmpleado.getSelectionModel().select(gerente.getFullName());
+                            break;
+                        }
+                    }
+                }
             }
         });
     }
@@ -232,7 +300,7 @@ public class ViewController {
                 .append("sueldo=").append(sueldo).append(",")
                 .append("comision=").append(comisionEmpleado).append(",")
                 .append("departamento=").append(departamento.getId()).append(",")
-                .append("gerente=").append(gerente.getId().trim());
+                .append("gerente=").append(gerente.getId());
         try {
             client.sendMessage(empleadoInfo.toString());
         } catch (IOException e) {
@@ -257,5 +325,43 @@ public class ViewController {
         return listadoGerentes.stream()
                 .filter(empleado -> empleado.getFullName().equals(nombre))
                 .findFirst();
+    }
+
+    public void actualizarEmpleado(ActionEvent actionEvent) {
+        String docIdentidad = docIdentidadEmpleado.getText();
+        String primerNombre = primerNombreEmpleado.getText();
+        String segundoNombre = segundoNombreEmpleado.getText();
+        String primerApellido = primerApellidoEmpleado.getText();
+        String segundoApellido = segundoApellidoEmpleado.getText();
+        LocalDate fechaNacimiento = fechaNacimientoEmpleado.getValue();
+        boolean estado = estadoEmpleado.isSelected();
+        Cargo cargo = buscarCargoPorNombre(cargoEmpleado.getSelectionModel().getSelectedItem()).get();
+        String email = emailEmpleado.getText();
+        String sueldo = sueldoEmpleado.getText();
+        String comisionEmpleado = comision.getText();
+        Departamento departamento = buscarDepartamentoPorNombre(departamentoEmpleado.getSelectionModel().getSelectedItem()).get();
+        Empleado gerente = buscarGerentePorNombre(gerenteEmpleado.getSelectionModel().getSelectedItem()).get();
+
+        StringBuilder empleadoInfo = new StringBuilder();
+        empleadoInfo
+                .append("@ClientNickname:actualizarEmpleado:")
+                .append("documentoIdentidad=").append(docIdentidad).append(",")
+                .append("primerNombre=").append(primerNombre).append(",")
+                .append("segundoNombre=").append(segundoNombre).append(",")
+                .append("primerApellido=").append(primerApellido).append(",")
+                .append("segundoApellido=").append(segundoApellido).append(",")
+                .append("fechaNacimiento=").append(fechaNacimiento).append(",")
+                .append("estado=").append((estado) ? 1 : 0).append(",")
+                .append("cargo=").append(cargo.getId()).append(",")
+                .append("email=").append(email).append(",")
+                .append("sueldo=").append(sueldo).append(",")
+                .append("comision=").append(comisionEmpleado).append(",")
+                .append("departamento=").append(departamento.getId()).append(",")
+                .append("gerente=").append(gerente.getId());
+        try {
+            client.sendMessage(empleadoInfo.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

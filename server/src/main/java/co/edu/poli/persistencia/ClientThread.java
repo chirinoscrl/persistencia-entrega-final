@@ -128,9 +128,11 @@ class ClientThread extends Thread {
                         SqlResult sqlResult;
 
                         switch (operation) {
-                            case "todosEmpleados":
-                                sqlResult = executeSelect(sql);
-                                clientOutputWriter.println("todosEmpleados:" + sqlResult.getResultsList());
+                            case "buscarEmpleado":
+                                sqlResult = buscarEmpleado(sql);
+                                String mensaje = "buscarEmpleado:" + sqlResult.getResultsList();
+                                logger.info("Enviando mensaje" + mensaje);
+                                clientOutputWriter.println(mensaje);
                                 break;
                             case "obtenerListadoCargos":
                                 sqlResult = executeSql("select * from cargo");
@@ -146,11 +148,19 @@ class ClientThread extends Thread {
                                 break;
                             case "crearEmpleado":
                                 sqlResult = executeInsertEmpleado(sql);
-                                logger.info("Result: " + sqlResult.getUpdateCount());
+                                logger.info("Result crearEmpleado: " + sqlResult.getUpdateCount());
                                 clientOutputWriter.println("crearEmpleado:" + sqlResult.getUpdateCount());
                                 break;
-                            case "@update":
-                                sqlResult = executeUpdate(sql);
+                            case "actualizarEmpleado":
+                                sqlResult = actualizarEmpleado(sql);
+                                logger.info("Result actualizarEmpleado: " + sqlResult.getUpdateCount());
+                                clientOutputWriter.println("actualizarEmpleado:" + sqlResult.getUpdateCount());
+                                if (sqlResult.getUpdateCount() == 1) {
+                                    SqlResult sqlResultBusqueda = buscarEmpleado(sql);
+                                    String mensajeBusqueda = "buscarEmpleado:" + sqlResultBusqueda.getResultsList();
+                                    logger.info("Enviando mensaje" + mensajeBusqueda);
+                                    clientOutputWriter.println(mensajeBusqueda);
+                                }
                                 break;
                             case "@delete":
                                 sqlResult = executeDelete(sql);
@@ -167,6 +177,16 @@ class ClientThread extends Thread {
         }
     }
 
+    private SqlResult buscarEmpleado(String sql) {
+        logger.info("Buscar empleado: " + sql);
+        Map<String, String> datos = getCamposDeString(sql);
+        String buscarEmpleadoSql = String.format(
+                "SELECT * FROM empleado WHERE documento_identidad = '%s'",
+                datos.get("documentoIdentidad")
+        );
+        return executeSql(buscarEmpleadoSql);
+    }
+
     private SqlResult executeSelect(String sql) {
         return executeSql(sql);
     }
@@ -177,8 +197,8 @@ class ClientThread extends Thread {
 
         String insertSql = String.format(
                 "INSERT INTO empleado (" +
-                        "`documento_identidad`, `primer_nombre`, `segundo_nombre`, `primer_apellido`, `segundo_apellido`, " +
-                        "`email`, `fecha_nac`, `sueldo`, `cargo_id`, `departamento_id`, `gerente_id`, `estado`, `comision`)" +
+                        "documento_identidad, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, " +
+                        "email, fecha_nac, sueldo, cargo_id, departamento_id, gerente_id, estado, comision)" +
                         " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, '%s', '%s', '%s', '%s', '%s')",
                 datos.get("documentoIdentidad"),
                 datos.get("primerNombre"),
@@ -218,8 +238,43 @@ class ClientThread extends Thread {
         return datos;
     }
 
-    private SqlResult executeUpdate(String sql) {
-        return executeSql(sql);
+    private SqlResult actualizarEmpleado(String sql) {
+        logger.info("Empleado a actualizar: " + sql);
+        Map<String, String> datos = getCamposDeString(sql);
+
+        String updateSql = String.format(
+                "UPDATE empleado SET " +
+                        "documento_identidad = '%s', " +
+                        "primer_nombre = '%s', " +
+                        "segundo_nombre = '%s', " +
+                        "primer_apellido = '%s', " +
+                        "segundo_apellido = '%s', " +
+                        "email = '%s', " +
+                        "fecha_nac = '%s', " +
+                        "sueldo = %s, " +
+                        "cargo_id = %s, " +
+                        "departamento_id = %s, " +
+                        "gerente_id = %s, " +
+                        "estado = %s , " +
+                        "comision = %s " +
+                        "WHERE documento_identidad = '%s'",
+                datos.get("documentoIdentidad"),
+                datos.get("primerNombre"),
+                datos.get("segundoNombre"),
+                datos.get("primerApellido"),
+                datos.get("segundoApellido"),
+                datos.get("email"),
+                datos.get("fechaNacimiento"),
+                datos.get("sueldo"),
+                datos.get("cargo"),
+                datos.get("departamento"),
+                datos.get("gerente"),
+                datos.get("estado"),
+                datos.get("comision"),
+                datos.get("documentoIdentidad")
+        );
+
+        return executeSql(updateSql);
     }
 
     private SqlResult executeDelete(String sql) {
@@ -242,7 +297,7 @@ class ClientThread extends Thread {
 
         try (Connection connection = DriverManager.getConnection(url, username, password);
              Statement statement = connection.createStatement()) {
-
+            logger.info("Sentencia a ejecutar:" + sql);
             boolean isResultSet = statement.execute(sql);
             if (isResultSet) {
                 ResultSet resultSet = statement.getResultSet();
@@ -263,6 +318,7 @@ class ClientThread extends Thread {
 
             logger.info("Consulta " + sql + " ejecutada con exito");
         } catch (SQLException e) {
+            logger.error(e);
             sqlResult.setException(e);
         }
 

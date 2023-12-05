@@ -28,6 +28,8 @@ public class ClientConnect {
     private final Consumer<String> departamentosHandler;
 
     private final Consumer<String> gerentesHandler;
+    private final Consumer<String> busquedaEmpleadoHandler;
+    private final Consumer<String> actualizarEmpleadoHandler;
 
     /**
      * Inicializa una nueva instancia de la clase ChatClient.
@@ -40,7 +42,9 @@ public class ClientConnect {
     public ClientConnect(String nickname,
                          Consumer<String> cargosHandler,
                          Consumer<String> departamentosHandler,
-                         Consumer<String> gerentesHandler
+                         Consumer<String> gerentesHandler,
+                         Consumer<String> busquedaEmpleadoHandler,
+                         Consumer<String> actualizarEmpleadoHandler
     ) throws IOException {
         socket = new Socket("localhost", 8888);
         buffWriter = new PrintWriter(socket.getOutputStream(), true);
@@ -51,6 +55,8 @@ public class ClientConnect {
         this.departamentosHandler = departamentosHandler;
         buffWriter.println("@ClientNickname:obtenerListadoDepartamentos:");
         this.gerentesHandler = gerentesHandler;
+        this.busquedaEmpleadoHandler = busquedaEmpleadoHandler;
+        this.actualizarEmpleadoHandler = actualizarEmpleadoHandler;
         System.out.println("Connected to server.");
     }
 
@@ -82,24 +88,7 @@ public class ClientConnect {
     public void readMessages() throws IOException {
         String serverMsg;
         while ((serverMsg = buffReader.readLine()) != null) {
-            System.out.println(serverMsg);
-            if (serverMsg.startsWith("Active Users: ")) {
-                cargosHandler.accept(serverMsg.substring(14));
-            }
-
-            if (serverMsg.startsWith("todosEmpleados:")) {
-                String[] rows = serverMsg.substring(1, serverMsg.length() - 1).split(",");
-
-                if (!rows[0].equals("")) {
-                    for (String row : rows) {
-                        // Dividir cada fila en columnas
-                        String[] columns = row.split("\\|");
-
-                        Empleado empleado = new Empleado(columns);
-                        System.out.println("Nombre del Empleado: " + empleado);
-                    }
-                }
-            }
+            System.out.println("Mensaje recibido: " + serverMsg);
 
             if (serverMsg.startsWith("obtenerListadoCargos:")) {
                 cargosHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
@@ -111,6 +100,14 @@ public class ClientConnect {
 
             if (serverMsg.startsWith("obtenerListadoGerentes:")) {
                 gerentesHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
+            }
+
+            if (serverMsg.startsWith("buscarEmpleado:")) {
+                busquedaEmpleadoHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
+            }
+
+            if (serverMsg.startsWith("actualizarEmpleado:")) {
+                actualizarEmpleadoHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
             }
         }
     }

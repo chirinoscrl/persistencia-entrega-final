@@ -103,7 +103,7 @@
                 </HBox>
                 <HBox spacing="10.0">
                     <Button text="Crear" fx:id="btnCrearEmpleado" onAction="#crearEmpleado"/>
-                    <Button text="Actualizar" fx:id="btnActualizarEmpleado"/>
+                    <Button text="Actualizar" fx:id="btnActualizarEmpleado" onAction="#actualizarEmpleado"/>
                     <Button text="Eliminar" fx:id="btnEliminarEmpleado"/>
                 </HBox>
             </VBox>
