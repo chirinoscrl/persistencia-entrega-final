@@ -3,14 +3,14 @@ package co.edu.poli.persistencia.cliente.dto;
 public class Cargo {
     private int id;
     private String nombre;
-    private int salarioBasico;
-    private int salarioTotal;
+    private String salarioBasico;
+    private String salarioTotal;
 
     public Cargo(String[] datos){
         this.id = Integer.parseInt(datos[0].trim());
         this.nombre = datos[1].trim();
-        this.salarioBasico = Integer.parseInt(datos[2].trim());
-        this.salarioTotal = Integer.parseInt(datos[3].trim());
+        this.salarioBasico = datos[2].trim();
+        this.salarioTotal = datos[3].trim();
     }
 
     public int getId() {
@@ -29,19 +29,19 @@ public class Cargo {
         this.nombre = nombre;
     }
 
-    public int getSalarioBasico() {
+    public String getSalarioBasico() {
         return salarioBasico;
     }
 
-    public void setSalarioBasico(int salarioBasico) {
+    public void setSalarioBasico(String salarioBasico) {
         this.salarioBasico = salarioBasico;
     }
 
-    public int getSalarioTotal() {
+    public String getSalarioTotal() {
         return salarioTotal;
     }
 
-    public void setSalarioTotal(int salarioTotal) {
+    public void setSalarioTotal(String salarioTotal) {
         this.salarioTotal = salarioTotal;
     }
 }

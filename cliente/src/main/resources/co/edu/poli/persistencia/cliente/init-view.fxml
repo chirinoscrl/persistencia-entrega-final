@@ -13,6 +13,7 @@
         <Label text="Nickname:"/>
         <TextField fx:id="nicknameInput" promptText="Ingrese su nickname"/>
         <Button text="Conectar" onAction="#onConexion"/>
+        <Label fx:id="statusConexion"/>
     </HBox>
 
     <TabPane>
@@ -35,6 +36,8 @@
                                 <Label text=" Información del empleado "/>
                                 <Separator maxWidth="100"/>
                             </HBox>
+
+                            <Label fx:id="statusOperacion"/>
 
                             <HBox spacing="10.0">
                                 <Label text="Activo:"/>
@@ -133,11 +136,6 @@
                     </children>
                 </HBox>
             </content>
-        </Tab>
-        <Tab text="Departamento" closable="false">
-            <!-- Aquí puedes agregar el contenido del tab Departamento -->
-            <Label fx:id="welcomeText"/>
-            <Button text="Departamento!"/>
         </Tab>
     </TabPane>
 </VBox>

@@ -16,7 +16,7 @@ public class Empleado {
     private int gerenteId;
     private boolean estado;
 
-    public Empleado(String[] datos){
+    public Empleado(String[] datos) {
         this.id = getParseInt(datos[0].trim());
         this.identificacion = datos[1];
         this.primerNombre = datos[2];
@@ -30,7 +30,11 @@ public class Empleado {
         this.cargoId = getParseInt(datos[10].trim());
         this.departamentoId = getParseInt(datos[11].trim());
         this.gerenteId = getParseInt(datos[12].trim());
-        this.estado = Boolean.parseBoolean(datos[13]);
+        if (datos[13].trim().equals("1")) {
+            this.estado = true;
+        } else {
+            this.estado = false;
+        }
     }
 
     private static int getParseInt(String datos) {

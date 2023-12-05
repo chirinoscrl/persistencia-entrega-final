@@ -93,7 +93,7 @@ class ClientThread extends Thread {
         synchronized (activeClientsWriters) {
             if (activeClientsWriters.containsKey(clientNickname)) {
                 clientOutputWriter.println("Nickname already in use. Disconnecting...");
-                return true;
+                throw new RuntimeException("Nickname already in use. Disconnecting...");
             } else {
                 activeClientsWriters.put(clientNickname, clientOutputWriter);
             }
@@ -226,7 +226,7 @@ class ClientThread extends Thread {
                 "INSERT INTO empleado (" +
                         "documento_identidad, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, " +
                         "email, fecha_nac, sueldo, cargo_id, departamento_id, gerente_id, estado, comision)" +
-                        " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, '%s', '%s', '%s', '%s', '%s')",
+                        " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, %s, %s, %s, %s, '%s')",
                 datos.get("documentoIdentidad"),
                 datos.get("primerNombre"),
                 datos.get("segundoNombre"),

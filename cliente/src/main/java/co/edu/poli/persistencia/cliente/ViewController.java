@@ -32,6 +32,12 @@ public class ViewController {
     private TextField docIdentidadEmpleado;
 
     @FXML
+    private Label statusConexion;
+
+    @FXML
+    private Label statusOperacion;
+
+    @FXML
     private TextField primerNombreEmpleado;
 
     @FXML
@@ -146,34 +152,51 @@ public class ViewController {
                     gerentes -> Platform.runLater(() -> obtenerListadoGerentes(gerentes)),
                     empleado -> Platform.runLater(() -> obtenerBusquedaEmpleado(empleado)),
                     actualizadoEmpleado -> Platform.runLater(() -> actualizadoEmpleado(actualizadoEmpleado)),
-                    historicoEmpleado -> Platform.runLater(() -> historicoEmpleado(historicoEmpleado))
+                    historicoEmpleado -> Platform.runLater(() -> historicoEmpleado(historicoEmpleado)),
+                    creacionEmpleado -> Platform.runLater(() -> creacionEmpleado(creacionEmpleado))
             );
 
             // Deshabilita el botón de conexión y cambia la etiqueta de estado después de la conexión
             // connectButton.setDisable(true);
-            //statusLabel.setText("Usuario conectado");
+            statusConexion.setText("Usuario conectado");
             //chatArea.appendText(String.format("Te acabas de conectar...\n"));
 
             new Thread(() -> {
-                try {
-                    while (true) {
+                while (true) {
+                    try {
                         client.readMessages();
+                    } catch (IOException e) {
+                        statusConexion.setText("Falló la conexión");
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }).start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             // Revisa el error, habilita el botón de conexión y muestra el error en la etiqueta de estado si la conexión falla
             // connectButton.setDisable(false);
-            // statusLabel.setText("Falló la conexión: " + e.getMessage());
+            statusConexion.setText("Falló la conexión: " + e.getMessage());
             logger.error(e);
         }
     }
 
     private void actualizadoEmpleado(String actualizadoEmpleado) {
         Platform.runLater(() -> {
-            System.out.println(actualizadoEmpleado);
+            System.out.println("Resultado de actualizacion:" + actualizadoEmpleado);
+            if (actualizadoEmpleado.equals("1")) {
+                statusOperacion.setText("Empleado actualizado con exito");
+            } else {
+                statusOperacion.setText("Empleado no puso ser actualizado");
+            }
+        });
+    }
+
+    private void creacionEmpleado(String creacionEmpleado) {
+        Platform.runLater(() -> {
+            System.out.println("Resultado de creacion:" + creacionEmpleado);
+            if (creacionEmpleado.equals("1")) {
+                statusOperacion.setText("Empleado creado con exito");
+            } else {
+                statusOperacion.setText("Empleado no puso ser creado");
+            }
         });
     }
 
@@ -312,7 +335,7 @@ public class ViewController {
                     gerentes.add(gerente.getFullName());
                 }
 
-                if (!Objects.equals(resultadoBusquedaEmpleado.get(0).getGerenteId(), "")) {
+                if (resultadoBusquedaEmpleado != null && !Objects.equals(resultadoBusquedaEmpleado.get(0).getGerenteId(), "")) {
                     for (Empleado gerente : listadoGerentes) {
                         if (gerente.getId() == resultadoBusquedaEmpleado.get(0).getGerenteId()) {
                             gerenteEmpleado.getSelectionModel().select(gerente.getFullName());
@@ -337,7 +360,6 @@ public class ViewController {
         String sueldo = sueldoEmpleado.getText();
         String comisionEmpleado = comision.getText();
         Departamento departamento = buscarDepartamentoPorNombre(departamentoEmpleado.getSelectionModel().getSelectedItem()).get();
-        Empleado gerente = buscarGerentePorNombre(gerenteEmpleado.getSelectionModel().getSelectedItem()).get();
 
         StringBuilder empleadoInfo = new StringBuilder();
         empleadoInfo
@@ -353,8 +375,15 @@ public class ViewController {
                 .append("email=").append(email).append(",")
                 .append("sueldo=").append(sueldo).append(",")
                 .append("comision=").append(comisionEmpleado).append(",")
-                .append("departamento=").append(departamento.getId()).append(",")
-                .append("gerente=").append(gerente.getId());
+                .append("departamento=").append(departamento.getId()).append(",");
+
+        if (gerenteEmpleado.getSelectionModel().getSelectedItem() != null) {
+            Empleado gerente = buscarGerentePorNombre(gerenteEmpleado.getSelectionModel().getSelectedItem()).get();
+            empleadoInfo.append("gerente=").append(gerente.getId());
+        } else {
+            empleadoInfo.append("gerente=");
+        }
+
         try {
             client.sendMessage(empleadoInfo.toString());
         } catch (IOException e) {
@@ -394,7 +423,6 @@ public class ViewController {
         String sueldo = sueldoEmpleado.getText();
         String comisionEmpleado = comision.getText();
         Departamento departamento = buscarDepartamentoPorNombre(departamentoEmpleado.getSelectionModel().getSelectedItem()).get();
-        Empleado gerente = buscarGerentePorNombre(gerenteEmpleado.getSelectionModel().getSelectedItem()).get();
 
         StringBuilder empleadoInfo = new StringBuilder();
         empleadoInfo
@@ -410,8 +438,16 @@ public class ViewController {
                 .append("email=").append(email).append(",")
                 .append("sueldo=").append(sueldo).append(",")
                 .append("comision=").append(comisionEmpleado).append(",")
-                .append("departamento=").append(departamento.getId()).append(",")
-                .append("gerente=").append(gerente.getId());
+                .append("departamento=").append(departamento.getId()).append(",");
+
+        if (gerenteEmpleado.getSelectionModel().getSelectedItem() != null) {
+            Empleado gerente = buscarGerentePorNombre(gerenteEmpleado.getSelectionModel().getSelectedItem()).get();
+            empleadoInfo.append("gerente=").append(gerente.getId());
+        } else {
+            empleadoInfo.append("gerente=");
+        }
+
+        System.out.println("Actualizando el usuario:"+ empleadoInfo.toString());
         try {
             client.sendMessage(empleadoInfo.toString());
         } catch (IOException e) {
@@ -464,5 +500,9 @@ public class ViewController {
                 }
             }
         });
+    }
+
+    public void handleChangeDepartamentoGeneral(ActionEvent actionEvent) {
+
     }
 }

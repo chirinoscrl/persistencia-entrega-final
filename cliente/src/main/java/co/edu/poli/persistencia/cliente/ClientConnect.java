@@ -31,6 +31,7 @@ public class ClientConnect {
     private final Consumer<String> busquedaEmpleadoHandler;
     private final Consumer<String> actualizarEmpleadoHandler;
     private final Consumer<String> historicoEmpleadoHandler;
+    private final Consumer<String> creacionEmpleadoHandler;
 
     /**
      * Inicializa una nueva instancia de la clase ChatClient.
@@ -46,7 +47,8 @@ public class ClientConnect {
                          Consumer<String> gerentesHandler,
                          Consumer<String> busquedaEmpleadoHandler,
                          Consumer<String> actualizarEmpleadoHandler,
-                         Consumer<String> historicoEmpleadoHandler
+                         Consumer<String> historicoEmpleadoHandler,
+                         Consumer<String> creacionEmpleadoHandler
     ) throws IOException {
         socket = new Socket("localhost", 8888);
         buffWriter = new PrintWriter(socket.getOutputStream(), true);
@@ -60,6 +62,7 @@ public class ClientConnect {
         this.busquedaEmpleadoHandler = busquedaEmpleadoHandler;
         this.actualizarEmpleadoHandler = actualizarEmpleadoHandler;
         this.historicoEmpleadoHandler = historicoEmpleadoHandler;
+        this.creacionEmpleadoHandler = creacionEmpleadoHandler;
         System.out.println("Connected to server.");
     }
 
@@ -93,6 +96,10 @@ public class ClientConnect {
         while ((serverMsg = buffReader.readLine()) != null) {
             System.out.println("Mensaje recibido: " + serverMsg);
 
+            if (serverMsg.startsWith("Nickname already in use. Disconnecting...")) {
+                throw new IOException("Nickname already in use. Disconnecting...");
+            }
+
             if (serverMsg.startsWith("obtenerListadoCargos:")) {
                 cargosHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
             }
@@ -111,6 +118,10 @@ public class ClientConnect {
 
             if (serverMsg.startsWith("actualizarEmpleado:")) {
                 actualizarEmpleadoHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
+            }
+
+            if (serverMsg.startsWith("crearEmpleado:")) {
+                creacionEmpleadoHandler.accept(serverMsg.split(":")[1]); // Procesa el mensaje
             }
 
             if (serverMsg.startsWith("historicoEmpleado:")) {
