@@ -364,4 +364,23 @@ public class ViewController {
             throw new RuntimeException(e);
         }
     }
+
+    public void limpiarCampos(ActionEvent actionEvent) {
+        docIdentidadEmpleado.clear();
+        primerNombreEmpleado.clear();
+        segundoNombreEmpleado.clear();
+        primerApellidoEmpleado.clear();
+        segundoApellidoEmpleado.clear();
+        emailEmpleado.clear();
+        fechaNacimientoEmpleado.setValue(null);
+        estadoEmpleado.setSelected(true);
+        cargoEmpleado.setValue(null);
+        sueldoEmpleado.clear();
+        comision.clear();
+        departamentoEmpleado.setValue(null);
+        gerenteEmpleado.setValue(null);
+    }
+
+    public void eliminarEmpleado(ActionEvent actionEvent) {
+    }
 }

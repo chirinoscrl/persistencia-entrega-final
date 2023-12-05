@@ -28,9 +28,9 @@
                 </HBox>
 
                 <HBox alignment="CENTER">
-                    <Separator maxWidth="100" />
-                    <Label text=" Información del empleado " />
-                    <Separator maxWidth="100" />
+                    <Separator maxWidth="100"/>
+                    <Label text=" Información del empleado "/>
+                    <Separator maxWidth="100"/>
                 </HBox>
 
                 <HBox spacing="10.0">
@@ -76,7 +76,7 @@
                 <HBox spacing="10.0">
                     <VBox maxWidth="200" minWidth="200" spacing="10">
                         <Label text="Cargo:"/>
-                        <ComboBox fx:id="cargoEmpleado"  minWidth="300"/>
+                        <ComboBox fx:id="cargoEmpleado" minWidth="300"/>
                     </VBox>
                 </HBox>
                 <HBox spacing="10.0">
@@ -104,7 +104,8 @@
                 <HBox spacing="10.0">
                     <Button text="Crear" fx:id="btnCrearEmpleado" onAction="#crearEmpleado"/>
                     <Button text="Actualizar" fx:id="btnActualizarEmpleado" onAction="#actualizarEmpleado"/>
-                    <Button text="Eliminar" fx:id="btnEliminarEmpleado"/>
+                    <Button fx:id="limpiadorBtn" text="Limpiar" onAction="#limpiarCampos"/>
+                    <Button text="Eliminar" fx:id="btnEliminarEmpleado" onAction="#eliminarEmpleado"/>
                 </HBox>
             </VBox>
         </Tab>
