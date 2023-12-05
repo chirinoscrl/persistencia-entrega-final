@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox alignment="TOP_CENTER" minWidth="1000" minHeight="800" spacing="20.0"
+      fx:controller="co.edu.poli.persistencia.cliente.ViewController" xmlns:fx="http://javafx.com/fxml">
+    <padding>
+        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+    </padding>
+
+    <HBox spacing="10.0">
+        <Label text="Nickname:"/>
+        <TextField fx:id="nicknameInput" promptText="Ingrese su nickname"/>
+        <Button text="Conectar" onAction="#onConexion"/>
+    </HBox>
+
+    <TabPane>
+        <Tab text="Empleado" closable="false">
+            <VBox spacing="10.0">
+                <HBox spacing="10.0">
+                    <padding>
+                        <Insets top="30" right="0" bottom="20" left="0"/>
+                    </padding>
+                    <Label text="Empleados:"/>
+                    <TextField fx:id="documentoEmpleadoBuscarField" minWidth="400"/>
+                    <Button text="Submit" onAction="#onBuscarEmpleados"/>
+                </HBox>
+
+                <HBox alignment="CENTER">
+                    <Separator maxWidth="100" />
+                    <Label text=" Información del empleado " />
+                    <Separator maxWidth="100" />
+                </HBox>
+
+                <HBox spacing="10.0">
+                    <Label text="Activo:"/>
+                    <CheckBox fx:id="estadoEmpleado"/>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Documento de identidad:"/>
+                        <TextField fx:id="docIdentidadEmpleado"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Primer nombre:"/>
+                        <TextField fx:id="primerNombreEmpleado"/>
+                    </VBox>
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Segundo nombre:"/>
+                        <TextField fx:id="segundoNombreEmpleado"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Primer apellido:"/>
+                        <TextField fx:id="primerApellidoEmpleado"/>
+                    </VBox>
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Segundo apellido:"/>
+                        <TextField fx:id="segundoApellidoEmpleado"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Email:"/>
+                        <TextField fx:id="emailEmpleado"/>
+                    </VBox>
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Fecha de nacimiento:"/>
+                        <DatePicker fx:id="fechaNacimientoEmpleado"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Cargo:"/>
+                        <ComboBox fx:id="cargoEmpleado"  minWidth="300"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Sueldo:"/>
+                        <TextField fx:id="sueldoEmpleado"/>
+                    </VBox>
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Comisión:"/>
+                        <TextField fx:id="comision"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Departamento:"/>
+                        <ComboBox fx:id="departamentoEmpleado" minWidth="300" onAction="#handleChangeDepartamento"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <VBox maxWidth="200" minWidth="200" spacing="10">
+                        <Label text="Gerente:"/>
+                        <ComboBox fx:id="gerenteEmpleado" minWidth="300"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="10.0">
+                    <Button text="Crear" fx:id="btnCrearEmpleado" onAction="#crearEmpleado"/>
+                    <Button text="Actualizar" fx:id="btnActualizarEmpleado"/>
+                    <Button text="Eliminar" fx:id="btnEliminarEmpleado"/>
+                </HBox>
+            </VBox>
+        </Tab>
+        <Tab text="Departamento" closable="false">
+            <!-- Aquí puedes agregar el contenido del tab Departamento -->
+            <Label fx:id="welcomeText"/>
+            <Button text="Departamento!"/>
+        </Tab>
+    </TabPane>
+</VBox>

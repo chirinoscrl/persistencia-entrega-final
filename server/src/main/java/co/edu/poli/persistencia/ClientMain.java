@@ -42,8 +42,8 @@ public class ClientMain {
                     // Dividir cada fila en columnas
                     String[] columns = row.split("\\|");
 
-                    Empleado empleado = new Empleado(columns);
-                    System.out.println("Nombre del Empleado: " + empleado);
+                    //Empleado empleado = new Empleado(columns);
+                    //System.out.println("Nombre del Empleado: " + empleado);
                 }
             }
         }

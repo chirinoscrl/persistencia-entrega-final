@@ -1,4 +1,4 @@
-package co.edu.poli.persistencia;
+package co.edu.poli.persistencia.cliente.dto;
 
 public class Empleado {
     private String id;
@@ -133,6 +133,10 @@ public class Empleado {
 
     public void setIdCargo(String idCargo) {
         this.idCargo = idCargo;
+    }
+
+    public String getFullName() {
+        return primerNombre + " " + primerApellido;
     }
 
     @Override

@@ -8,8 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -119,25 +118,36 @@ class ClientThread extends Thread {
                     logger.info("Client [" + clientNickname + "]: Conexion finalizada");
                     break;
                 } else {
-                    int firstAt = clientMessage.indexOf('@', 1);
-                    int colon = clientMessage.indexOf(':', firstAt);
+                    String[] splitStr = clientMessage.split(":", 3);  // Divide el string en tres partes
 
-                    String clientNickname = clientMessage.substring(0, firstAt);
-                    String operation = clientMessage.substring(firstAt, colon);
-                    String sql = clientMessage.substring(colon + 1);
+                    String clientNickname = splitStr[0];
+                    String operation = splitStr[1];
+                    String sql = splitStr[2];
                     logger.info("Client [" + clientNickname + "] -> query:" + sql);
                     try {
                         SqlResult sqlResult;
 
-                        switch (operation.toLowerCase()) {
-                            case "@select":
+                        switch (operation) {
+                            case "todosEmpleados":
                                 sqlResult = executeSelect(sql);
-                                clientOutputWriter.println("Result: " + sqlResult.getResultsList());
+                                clientOutputWriter.println("todosEmpleados:" + sqlResult.getResultsList());
                                 break;
-                            case "@insert":
-                                sqlResult = executeInsert(sql);
+                            case "obtenerListadoCargos":
+                                sqlResult = executeSql("select * from cargo");
+                                clientOutputWriter.println("obtenerListadoCargos:" + sqlResult.getResultsList());
+                                break;
+                            case "obtenerListadoDepartamentos":
+                                sqlResult = executeSql("select * from departamento");
+                                clientOutputWriter.println("obtenerListadoDepartamentos:" + sqlResult.getResultsList());
+                                break;
+                            case "obtenerListadoGerentes":
+                                sqlResult = executeSql("select * from empleado where departamento_id =" + sql);
+                                clientOutputWriter.println("obtenerListadoGerentes:" + sqlResult.getResultsList());
+                                break;
+                            case "crearEmpleado":
+                                sqlResult = executeInsertEmpleado(sql);
                                 logger.info("Result: " + sqlResult.getUpdateCount());
-                                clientOutputWriter.println("Result: " + sqlResult.getUpdateCount());
+                                clientOutputWriter.println("crearEmpleado:" + sqlResult.getUpdateCount());
                                 break;
                             case "@update":
                                 sqlResult = executeUpdate(sql);
@@ -161,8 +171,51 @@ class ClientThread extends Thread {
         return executeSql(sql);
     }
 
-    private SqlResult executeInsert(String sql) {
-        return executeSql(sql);
+    private SqlResult executeInsertEmpleado(String sql) {
+        logger.info("Empleado a insertar: " + sql);
+        Map<String, String> datos = getCamposDeString(sql);
+
+        String insertSql = String.format(
+                "INSERT INTO empleado (" +
+                        "`documento_identidad`, `primer_nombre`, `segundo_nombre`, `primer_apellido`, `segundo_apellido`, " +
+                        "`email`, `fecha_nac`, `sueldo`, `cargo_id`, `departamento_id`, `gerente_id`, `estado`, `comision`)" +
+                        " VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', %s, '%s', '%s', '%s', '%s', '%s')",
+                datos.get("documentoIdentidad"),
+                datos.get("primerNombre"),
+                datos.get("segundoNombre"),
+                datos.get("primerApellido"),
+                datos.get("segundoApellido"),
+                datos.get("email"),
+                datos.get("fechaNacimiento"),
+                datos.get("sueldo"),
+                datos.get("cargo"),
+                datos.get("departamento"),
+                datos.get("gerente"),
+                datos.get("estado"),
+                datos.get("comision")
+        );
+
+        return executeSql(insertSql);
+    }
+
+    private static Map<String, String> getCamposDeString(String sql) {
+        Map<String, String> datos = new HashMap<>();
+
+        String key = "";
+        StringTokenizer st = new StringTokenizer(sql, "=,", true);
+        String prevToken = "";
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (!token.equals("=") && !token.equals(",")) {
+                if (prevToken.equals("=")) {
+                    datos.put(key, token);
+                } else {
+                    key = token;
+                }
+            }
+            prevToken = token;
+        }
+        return datos;
     }
 
     private SqlResult executeUpdate(String sql) {
@@ -208,6 +261,7 @@ class ClientThread extends Thread {
                 sqlResult.setUpdateCount(statement.getUpdateCount());
             }
 
+            logger.info("Consulta " + sql + " ejecutada con exito");
         } catch (SQLException e) {
             sqlResult.setException(e);
         }
